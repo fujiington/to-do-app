@@ -1,11 +1,57 @@
-        document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function() {
             const newListInput = document.getElementById('new-list-input');
             const addListBtn = document.getElementById('add-list-btn');
+            const listTypeToggle = document.getElementById('list-type-toggle');
             const listsContainer = document.getElementById('lists-container');
+            const themeToggle = document.getElementById('theme-toggle');
+            const modal = document.getElementById('todo-modal');
+            const editListModal = document.getElementById('edit-list-modal');
+            const closeModalBtn = document.querySelectorAll('.close-modal');
+            const modalListTitle = document.getElementById('modal-list-title');
+            const modalTodoInput = document.getElementById('modal-todo-input');
+            const modalAddTodoBtn = document.getElementById('modal-add-todo');
+            const modalTodosContainer = document.getElementById('modal-todos-container');
+            const editListInput = document.getElementById('edit-list-input');
+            const saveListBtn = document.getElementById('save-list-btn');
             
-            // Load lister fra localStorage
+            let currentListId = null;
+            let currentEditListId = null;
+            let listType = 'with-todos'; // Default list type
+            
+            // Tjek for gemt tema præference
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+                themeToggle.checked = true;
+            }
+            
+            // Tema skift funktionalitet
+            themeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+
+                 // List type toggle functionality
+            listTypeToggle.addEventListener('click', function() {
+                if (listType === 'with-todos') {
+                    listType = 'without-todos';
+                    listTypeToggle.textContent = '📝';
+                    listTypeToggle.title = 'Skift til lister med opgaver';
+                } else {
+                    listType = 'with-todos';
+                    listTypeToggle.textContent = '📋';
+                    listTypeToggle.title = 'Skift til lister uden opgaver';
+                }
+            });
+            
+            // Indlæs lister fra localStorage
             loadLists();
             
+            // Event listeners
             addListBtn.addEventListener('click', addNewList);
             newListInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
@@ -13,24 +59,60 @@
                 }
             });
             
+            closeModalBtn.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.closest('.modal').id === 'todo-modal') {
+                        closeModal();
+                    } else if (this.closest('.modal').id === 'edit-list-modal') {
+                        closeEditModal();
+                    }
+                });
+            });
+            
+            modalAddTodoBtn.addEventListener('click', addTodoFromModal);
+            modalTodoInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTodoFromModal();
+                }
+            });
+            
+            saveListBtn.addEventListener('click', saveListEdit);
+            editListInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    saveListEdit();
+                }
+            });
+            
+            // Luk modal når der klikkes udenfor
+            window.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                } else if (e.target === editListModal) {
+                    closeEditModal();
+                }
+            });
+            
             function addNewList() {
                 const listName = newListInput.value.trim();
                 if (listName === '') {
-                    alert('Please enter a list name');
+                    alert('Indtast venligst et listenavn');
                     return;
                 }
                 
-                // Ny liste objekt
+                // Opret nyt list objekt
                 const newList = {
                     id: Date.now(),
                     name: listName,
-                    todos: []
+                    todos: listType === 'with-todos' ? [] : null // Set todos to null for lists without todos
                 };
                 
+                // Gem til localStorage
                 saveList(newList);
-
+                
+                // Opret listeelement
                 createListElement(newList);
                 
+                // Ryd input
                 newListInput.value = '';
                 newListInput.focus();
             }
@@ -52,8 +134,9 @@
                 if (lists.length === 0) {
                     listsContainer.innerHTML = `
                         <div class="empty-state">
-                            <p>Du har lige nu ikke nogen lister!</p>
-                            <p>Lav en liste for at se dine lister!</p>
+                            <div class="empty-state-icon">📝</div>
+                            <p>Du har ingen lister endnu!</p>
+                            <p>Opret en ny liste for at komme i gang</p>
                         </div>
                     `;
                     return;
@@ -65,9 +148,8 @@
                 });
             }
             
-
             function createListElement(list) {
-
+                // Fjern tom tilstand hvis den eksisterer
                 const emptyState = document.querySelector('.empty-state');
                 if (emptyState) {
                     emptyState.remove();
@@ -77,6 +159,15 @@
                 listElement.className = 'list';
                 listElement.dataset.id = list.id;
                 
+                let todoInfo = '';
+                if (list.todos !== null) {
+                    const completedCount = list.todos.filter(todo => todo.completed).length;
+                    const totalCount = list.todos.length;
+                    todoInfo = `<div class="todo-count">${completedCount} af ${totalCount} opgaver fuldført</div>`;
+                } else {
+                    todoInfo = `<div class="todo-count"></div>`;
+                }
+                
                 listElement.innerHTML = `
                     <div class="list-header">
                         <div class="list-title">${list.name}</div>
@@ -85,110 +176,139 @@
                             <button class="delete-btn">Slet</button>
                         </div>
                     </div>
-                    <div class="todo-input-section">
-                        <input type="text" class="todo-input" placeholder="Lav ny todo...">
-                        <button class="add-todo-btn">Add</button>
-                    </div>
-                    <div class="todos-container">
-                        ${renderTodos(list.todos)}
-                    </div>
+                    ${todoInfo}
                 `;
                 
                 listsContainer.appendChild(listElement);
                 
-                // Laver nye event listeners for nye lister
-                const listTitle = listElement.querySelector('.list-title');
-                listTitle.addEventListener('click', toggleListExpansion);
+                // Tilføj event listeners til den nye liste
+                listElement.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('edit-btn') && 
+                        !e.target.classList.contains('delete-btn')) {
+                        if (list.todos !== null) {
+                            openModal(list.id);
+                        }
+                    }
+                });
                 
                 const editBtn = listElement.querySelector('.edit-btn');
-                editBtn.addEventListener('click', () => editList(list.id));
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditModal(list.id);
+                });
                 
                 const deleteBtn = listElement.querySelector('.delete-btn');
-                deleteBtn.addEventListener('click', () => deleteList(list.id));
-                
-                const addTodoBtn = listElement.querySelector('.add-todo-btn');
-                addTodoBtn.addEventListener('click', () => addTodoToList(list.id));
-                
-                const todoInput = listElement.querySelector('.todo-input');
-                todoInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        addTodoToList(list.id);
-                    }
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteList(list.id);
                 });
             }
             
-            // Render todos for en liste
-            function renderTodos(todos) {
-                if (todos.length === 0) {
-                    return '<div class="empty-todos">Ingen ting at lave... Lav en ny liste</div>';
-                }
-                
-                return todos.map(todo => `
-                    <div class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
-                        <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''}>
-                        <span class="todo-text">${todo.text}</span>
-                    </div>
-                `).join('');
-            }
-            
-            // List expansions
-            function toggleListExpansion(e) {
-                const listElement = e.target.closest('.list');
-                listElement.classList.toggle('expanded');
-            }
-            
-            // Rediger en liste
-            function editList(listId) {
+            function openModal(listId) {
                 const lists = getStoredLists();
-                const listIndex = lists.findIndex(list => list.id === listId);
+                const list = lists.find(list => list.id === listId);
                 
-                if (listIndex === -1) return;
+                if (!list) return;
                 
-                const newName = prompt('Enter new list name:', lists[listIndex].name);
+                currentListId = listId;
+                modalListTitle.textContent = list.name;
+                renderTodosInModal(list.todos);
                 
-                if (newName !== null && newName.trim() !== '') {
-                    lists[listIndex].name = newName.trim();
-                    localStorage.setItem('todoLists', JSON.stringify(lists));
-                    
-                    // Opdatere ui
-                    const listElement = document.querySelector(`.list[data-id="${listId}"]`);
-                    listElement.querySelector('.list-title').textContent = newName.trim();
-                }
+                modal.style.display = 'block';
+                modalTodoInput.focus();
             }
             
-            // Slet en liste
-            function deleteList(listId) {
-                if (!confirm('Are you sure you want to delete this list?')) {
+            function closeModal() {
+                modal.style.display = 'none';
+                currentListId = null;
+                
+                // Opdater listerne for at vise eventuelle ændringer
+                loadLists();
+            }
+            
+            function openEditModal(listId) {
+                const lists = getStoredLists();
+                const list = lists.find(list => list.id === listId);
+                
+                if (!list) return;
+                
+                currentEditListId = listId;
+                editListInput.value = list.name;
+                editListModal.style.display = 'block';
+                editListInput.focus();
+            }
+            
+            function closeEditModal() {
+                editListModal.style.display = 'none';
+                currentEditListId = null;
+                editListInput.value = '';
+            }
+            
+            function saveListEdit() {
+                if (!currentEditListId) return;
+                
+                const newName = editListInput.value.trim();
+                if (newName === '') {
+                    alert('Indtast venligst et listenavn');
                     return;
                 }
                 
-                let lists = getStoredLists();
-                lists = lists.filter(list => list.id !== listId);
+                const lists = getStoredLists();
+                const listIndex = lists.findIndex(list => list.id === currentEditListId);
+                
+                if (listIndex === -1) return;
+                
+                lists[listIndex].name = newName;
                 localStorage.setItem('todoLists', JSON.stringify(lists));
                 
-                // Slet fra ui
-                const listElement = document.querySelector(`.list[data-id="${listId}"]`);
-                listElement.remove();
+                // Opdater UI
+                loadLists();
                 
-                // hvis ingen lister hvis tom
-                if (lists.length === 0) {
-                    listsContainer.innerHTML = `
-                        <div class="empty-state">
-                            <p>Du har lige nu ikke nogen lister!</p>
-                            <p>Lav en liste for at se dine lister!</p>
-                        </div>
-                    `;
+                // Hvis modal er åben for denne liste, opdater titel
+                if (currentListId === currentEditListId) {
+                    modalListTitle.textContent = newName;
                 }
+                
+                closeEditModal();
             }
             
-            // Add todo til en liste
-            function addTodoToList(listId) {
-                const listElement = document.querySelector(`.list[data-id="${listId}"]`);
-                const todoInput = listElement.querySelector('.todo-input');
-                const todoText = todoInput.value.trim();
+            function renderTodosInModal(todos) {
+                if (todos.length === 0) {
+                    modalTodosContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✅</div>
+                            <p>Ingen opgaver i denne liste endnu</p>
+                            <p>Tilføj en opgave for at komme i gang</p>
+                        </div>
+                    `;
+                    return;
+                }
                 
+                modalTodosContainer.innerHTML = '';
+                todos.forEach(todo => {
+                    const todoItem = document.createElement('div');
+                    todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                    todoItem.dataset.id = todo.id;
+                    
+                    todoItem.innerHTML = `
+                        <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''}>
+                        <span class="todo-text">${todo.text}</span>
+                    `;
+                    
+                    modalTodosContainer.appendChild(todoItem);
+                    
+                    // Tilføj event listener til checkbox
+                    const checkbox = todoItem.querySelector('.todo-checkbox');
+                    checkbox.addEventListener('change', () => toggleTodoComplete(currentListId, todo.id));
+                });
+            }
+            
+            function addTodoFromModal() {
+                if (!currentListId) return;
+                
+                const todoText = modalTodoInput.value.trim();
                 if (todoText === '') {
-                    alert('Skriv en todo!');
+                    alert('Indtast venligst en opgave');
                     return;
                 }
                 
@@ -200,39 +320,21 @@
                 
                 // Opdater localStorage
                 const lists = getStoredLists();
-                const listIndex = lists.findIndex(list => list.id === listId);
+                const listIndex = lists.findIndex(list => list.id === currentListId);
                 
                 if (listIndex === -1) return;
                 
                 lists[listIndex].todos.push(newTodo);
                 localStorage.setItem('todoLists', JSON.stringify(lists));
                 
-             
-                const todosContainer = listElement.querySelector('.todos-container');
-                if (todosContainer.querySelector('.empty-todos')) {
-                    todosContainer.innerHTML = '';
-                }
+                // Opdater modal UI
+                renderTodosInModal(lists[listIndex].todos);
                 
-                const todoItem = document.createElement('div');
-                todoItem.className = 'todo-item';
-                todoItem.dataset.id = newTodo.id;
-                todoItem.innerHTML = `
-                    <input type="checkbox" class="todo-checkbox">
-                    <span class="todo-text">${newTodo.text}</span>
-                `;
-                
-                todosContainer.appendChild(todoItem);
-                
-            
-                const checkbox = todoItem.querySelector('.todo-checkbox');
-                checkbox.addEventListener('change', () => toggleTodoComplete(listId, newTodo.id));
-                
-      
-                todoInput.value = '';
-                todoInput.focus();
+                // Ryd input
+                modalTodoInput.value = '';
+                modalTodoInput.focus();
             }
             
- 
             function toggleTodoComplete(listId, todoId) {
                 const lists = getStoredLists();
                 const listIndex = lists.findIndex(list => list.id === listId);
@@ -246,8 +348,28 @@
                 lists[listIndex].todos[todoIndex].completed = !lists[listIndex].todos[todoIndex].completed;
                 localStorage.setItem('todoLists', JSON.stringify(lists));
                 
-                // Opdatere ui
-                const todoItem = document.querySelector(`.list[data-id="${listId}"] .todo-item[data-id="${todoId}"]`);
-                todoItem.classList.toggle('completed');
+                // Opdater modal UI
+                renderTodosInModal(lists[listIndex].todos);
+            }
+            
+            function deleteList(listId) {
+                if (!confirm('Er du sikker på, at du vil slette denne liste?')) {
+                    return;
+                }
+                
+                let lists = getStoredLists();
+                lists = lists.filter(list => list.id !== listId);
+                localStorage.setItem('todoLists', JSON.stringify(lists));
+                
+                // Fjern fra UI
+                loadLists();
+                
+                // Hvis modal er åben for denne liste, luk den
+                if (currentListId === listId) {
+                    closeModal();
+                }
+                if (currentEditListId === listId) {
+                    closeEditModal();
+                }
             }
         });
