@@ -1,4 +1,4 @@
-  document.addEventListener('DOMContentLoaded', function() {
+
             const newListInput = document.getElementById('new-list-input');
             const addListBtn = document.getElementById('add-list-btn');
             const listTypeToggle = document.getElementById('list-type-toggle');
@@ -16,7 +16,7 @@
             
             let currentListId = null;
             let currentEditListId = null;
-            let listType = 'with-todos'; // Default list type
+            let listType = 'with-todos'; 
             
             // Tjek for gemt tema præference
             if (localStorage.getItem('darkMode') === 'enabled') {
@@ -372,4 +372,3 @@
                     closeEditModal();
                 }
             }
-        });
