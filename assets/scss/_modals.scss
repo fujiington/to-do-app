@@ -1,0 +1,45 @@
+// Modal Animations
+@include modal-animation;
+
+// Todo Modal Specific Styles
+#todo-modal {
+  .modal-content {
+    @include flex-column;
+  }
+  
+  .modal-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .todos-container {
+    flex: 1;
+  }
+}
+
+// Edit List Modal Specific Styles
+#edit-list-modal {
+  .input-section {
+    border-bottom: none;
+    padding: 0;
+  }
+}
+
+// Responsive Modal Styles
+@include respond-to(tablet) {
+  .todo-input-section {
+    flex-direction: column;
+  }
+  
+  .todo-input {
+    margin-bottom: map-get($spacing, sm);
+  }
+}
+
+@include respond-to(mobile) {
+  .list-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

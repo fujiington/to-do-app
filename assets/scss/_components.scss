@@ -1,0 +1,530 @@
+// Typography
+h1 {
+  color: var(--text-color);
+  font-size: 34px;
+  font-weight: map-get($font-weights, bold);
+  
+  @include respond-to(tablet) {
+    font-size: 28px;
+  }
+}
+
+.modal-title {
+  font-size: 21px;
+  font-weight: map-get($font-weights, bold);
+  color: var(--text-color);
+  
+  @include respond-to(tablet) {
+    font-size: 19px;
+  }
+  
+  @include respond-to(mobile) {
+    font-size: 18px;
+  }
+}
+
+// Theme Switch
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 51px;
+  height: 31px;
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: map-get($transition, slow);
+  border-radius: map-get($border-radius, xl);
+  
+  &::before {
+    position: absolute;
+    content: "";
+    height: 27px;
+    width: 27px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: map-get($transition, slow);
+    border-radius: 50%;
+  }
+}
+
+input:checked + .slider {
+  background-color: #34C759;
+}
+
+input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+// Inputs
+#new-list-input,
+.todo-input,
+#edit-list-input {
+  flex: 1;
+  padding: map-get($spacing, sm) map-get($spacing, md);
+  border: none;
+  border-radius: map-get($border-radius, md);
+  font-size: 17px;
+  outline: none;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  
+  @include respond-to(tablet) {
+    margin-bottom: map-get($spacing, sm);
+  }
+}
+
+// Buttons
+#add-list-btn,
+.add-todo-btn,
+.edit-btn,
+.delete-btn,
+.list-type-btn,
+.close-modal,
+#save-list-btn {
+  @include button-reset;
+  padding: map-get($spacing, sm) map-get($spacing, lg);
+  border-radius: map-get($border-radius, md);
+  font-size: 17px;
+  font-weight: map-get($font-weights, semibold);
+  transition: background-color map-get($transition, fast);
+}
+
+// Primary Buttons
+#add-list-btn,
+.add-todo-btn,
+.edit-btn,
+#save-list-btn {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  white-space: nowrap;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+// Secondary Buttons
+.list-type-btn {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+}
+
+// Danger Button
+.delete-btn {
+  background-color: var(--accent-color);
+  color: white;
+  
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+// Close Button
+.close-modal {
+  color: var(--primary-color);
+  padding: map-get($spacing, sm);
+  font-size: 20px;
+  font-weight: map-get($font-weights, normal);
+}
+
+// Lists
+.list {
+  background-color: var(--list-bg);
+  border-radius: map-get($border-radius, lg);
+  padding: map-get($spacing, md);
+  margin-bottom: map-get($spacing, md);
+  position: relative;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: transform map-get($transition, fast);
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.list-header {
+  @include flex-between;
+  margin-bottom: map-get($spacing, sm);
+  
+  @include respond-to(mobile) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.list-title {
+  font-size: 20px;
+  font-weight: map-get($font-weights, semibold);
+  color: var(--text-color);
+  padding: map-get($spacing, sm);
+  border-radius: map-get($border-radius, sm);
+  flex: 1;
+  word-break: break-word;
+  
+  @include respond-to(tablet) {
+    font-size: 18px;
+  }
+  
+  @include respond-to(mobile) {
+    margin-bottom: map-get($spacing, sm);
+  }
+}
+
+.list-actions {
+  display: flex;
+  gap: map-get($spacing, sm);
+  
+  @include respond-to(mobile) {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+.todo-count {
+  margin-top: map-get($spacing, sm);
+  font-size: 15px;
+  color: var(--secondary-color);
+}
+
+// Todo Items
+.todo-input-section {
+  display: flex;
+  margin-bottom: map-get($spacing, lg);
+  gap: map-get($spacing, sm);
+  
+  @include respond-to(tablet) {
+    flex-direction: column;
+  }
+}
+
+.todos-container {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.todo-item {
+  @include flex-between;
+  align-items: center;
+  padding: map-get($spacing, sm) 0;
+  border-bottom: 1px solid var(--border-color);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.todo-text {
+  flex: 1;
+  margin-left: map-get($spacing, sm);
+  font-size: 17px;
+}
+
+.todo-checkbox {
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.completed .todo-text {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+// Empty States
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--secondary-color);
+  
+  p {
+    margin-bottom: 15px;
+    font-size: 17px;
+  }
+}
+
+.empty-state-icon {
+  font-size: 50px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+// Date and Time Picker Styles
+.date-time-section {
+  display: flex;
+  gap: map-get($spacing, sm);
+  margin-bottom: map-get($spacing, md);
+  flex-wrap: wrap;
+}
+
+.date-input-group,
+.time-input-group {
+  flex: 1;
+  min-width: 120px;
+}
+
+.date-input-label,
+.time-input-label {
+  display: block;
+  margin-bottom: map-get($spacing, xs);
+  font-size: 14px;
+  font-weight: map-get($font-weights, medium);
+  color: var(--secondary-color);
+}
+
+.date-input,
+.time-input {
+  width: 100%;
+  padding: map-get($spacing, sm);
+  border: 1px solid var(--border-color);
+  border-radius: map-get($border-radius, md);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 14px;
+  cursor: pointer;
+  
+  &:hover {
+    border-color: var(--primary-color);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.1);
+  }
+}
+
+// Datepicker Modal
+.datepicker-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--container-bg);
+  border-radius: map-get($border-radius, lg);
+  padding: map-get($spacing, md);
+  box-shadow: 0 10px 30px var(--shadow-color);
+  z-index: $datepicker-z-index;
+  min-width: 300px;
+}
+
+.datepicker-header {
+  @include flex-between;
+  margin-bottom: map-get($spacing, md);
+}
+
+.datepicker-title {
+  font-weight: map-get($font-weights, semibold);
+}
+
+.datepicker-nav {
+  display: flex;
+  gap: map-get($spacing, sm);
+}
+
+.datepicker-nav-btn {
+  @include button-reset;
+  padding: map-get($spacing, xs);
+  border-radius: map-get($border-radius, sm);
+  
+  &:hover {
+    background-color: var(--date-hover);
+  }
+}
+
+.datepicker-calendar {
+  width: 100%;
+}
+
+.datepicker-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: map-get($font-weights, medium);
+  margin-bottom: map-get($spacing, sm);
+}
+
+.datepicker-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.datepicker-day {
+  @include button-reset;
+  padding: map-get($spacing, sm);
+  border-radius: map-get($border-radius, sm);
+  font-size: 14px;
+  
+  &:hover:not(.disabled):not(.selected) {
+    background-color: var(--date-hover);
+  }
+  
+  &.selected {
+    background-color: var(--date-selected);
+    color: white;
+  }
+  
+  &.disabled {
+    color: var(--border-color);
+    cursor: not-allowed;
+  }
+  
+  &.today {
+    font-weight: map-get($font-weights, bold);
+    color: var(--primary-color);
+  }
+}
+
+// Timepicker Modal
+.timepicker-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--container-bg);
+  border-radius: map-get($border-radius, lg);
+  padding: map-get($spacing, md);
+  box-shadow: 0 10px 30px var(--shadow-color);
+  z-index: $datepicker-z-index;
+  min-width: 200px;
+}
+
+.timepicker-title {
+  font-weight: map-get($font-weights, semibold);
+  margin-bottom: map-get($spacing, md);
+  text-align: center;
+}
+
+.timepicker-sliders {
+  display: flex;
+  gap: map-get($spacing, md);
+  margin-bottom: map-get($spacing, md);
+}
+
+.timepicker-section {
+  flex: 1;
+  text-align: center;
+}
+
+.timepicker-label {
+  display: block;
+  margin-bottom: map-get($spacing, xs);
+  font-size: 12px;
+  color: var(--secondary-color);
+}
+
+.timepicker-input {
+  width: 60px;
+  padding: map-get($spacing, sm);
+  border: 1px solid var(--border-color);
+  border-radius: map-get($border-radius, md);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  text-align: center;
+  font-size: 16px;
+}
+
+.timepicker-ampm {
+  display: flex;
+  gap: map-get($spacing, xs);
+  margin-top: map-get($spacing, sm);
+}
+
+.timepicker-am,
+.timepicker-pm {
+  @include button-reset;
+  flex: 1;
+  padding: map-get($spacing, xs);
+  border-radius: map-get($border-radius, sm);
+  font-size: 12px;
+  background-color: var(--time-bg);
+  
+  &.active {
+    background-color: var(--primary-color);
+    color: white;
+  }
+}
+
+// Overlay for modals
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--modal-bg);
+  z-index: $datepicker-z-index - 1;
+}
+
+// Todo item with date/time
+.todo-item.with-datetime {
+  align-items: flex-start;
+}
+
+.todo-datetime {
+  font-size: 12px;
+  color: var(--secondary-color);
+  margin-top: map-get($spacing, xs);
+  
+  &.overdue {
+    color: var(--accent-color);
+    font-weight: map-get($font-weights, medium);
+  }
+  
+  &.today {
+    color: var(--primary-color);
+    font-weight: map-get($font-weights, medium);
+  }
+}
+
+.todo-content {
+  flex: 1;
+  margin-left: map-get($spacing, sm);
+}
+
+.todo-main-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// Clear date/time button
+.clear-datetime {
+  @include button-reset;
+  color: var(--accent-color);
+  font-size: 12px;
+  padding: map-get($spacing, xs);
+  margin-left: map-get($spacing, sm);
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+@include respond-to(mobile) {
+  .date-time-section {
+    flex-direction: column;
+  }
+  
+  .datepicker-modal,
+  .timepicker-modal {
+    width: 90%;
+    max-width: 320px;
+  }
+}

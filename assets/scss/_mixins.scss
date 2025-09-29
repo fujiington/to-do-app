@@ -1,0 +1,73 @@
+// Media Query Mixin
+@mixin respond-to($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media (max-width: map-get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint '#{$breakpoint}' not found in $breakpoints map";
+  }
+}
+
+// Flexbox Mixins
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// Button Reset
+@mixin button-reset {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+// Theme Mixin
+@mixin theme($theme) {
+  @each $property, $value in map-get($colors, $theme) {
+    --#{$property}: #{$value};
+  }
+}
+
+// Truncate Text
+@mixin truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+// Position Absolute Center
+@mixin absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// Modal Animation
+@mixin modal-animation {
+  @keyframes modalopen {
+    from {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

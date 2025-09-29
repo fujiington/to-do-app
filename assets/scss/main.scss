@@ -1,0 +1,9 @@
+// Import all SCSS partials
+@import 'variables';
+@import 'mixins';
+@import 'base';
+@import 'layout';
+@import 'components';
+@import 'modals';
+
+// Additional global styles can be added here if needed

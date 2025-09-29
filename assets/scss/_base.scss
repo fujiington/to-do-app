@@ -1,0 +1,70 @@
+// Reset and Base Styles
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: $font-family;
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background-color map-get($transition, base), color map-get($transition, base);
+  
+  // Light theme (default)
+  @include theme('light');
+  
+  &.dark-mode {
+    @include theme('dark');
+  }
+  
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+// Root Variables for CSS Custom Properties
+:root {
+  // Initialize CSS variables
+  @each $theme, $colors in $colors {
+    @if $theme == 'light' {
+      @each $property, $value in $colors {
+        --#{$property}: #{$value};
+      }
+    }
+  }
+}
+
+// Selection Styles
+::selection {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+// Focus Styles
+*:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+// Scrollbar Styles
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--input-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
+}
